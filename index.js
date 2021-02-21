@@ -11,11 +11,11 @@ client.once('ready', () => {
   client.user.setPresence({activity: {name: "I'm watching you! @me to see my current prefix"}, status: 'online'})
 
 })
-const uri = "____________MONGODB___CONNECTION_STRING____________";
+const uri = "_____________MONGODB_CONNECTION_STRING_____________________";
 const mongoclient = new MongoClient(uri, {poolSize: 10, bufferMaxEntries: 0, useNewUrlParser: true,useUnifiedTopology: true});
 mongoclient.connect(async function(err, mongoclient){
   const db = mongoclient.db("discordbot");
-client.login("_______DISCORD_API_KEY_________")
+client.login("____________________DISCORD_API_KEY_____________")
 client.on('message', message => {
   var guildSettings; //the kinda global settings that I will put data in, in the first if (message) statement
   var prefix = "?" // the default prefix that will get overwritten if admins change it.
@@ -152,7 +152,7 @@ if (message.content.toLowerCase() === prefix+"reset bot"||message.content.toLowe
           message.channel.send("You don't have sufficient permissions to use that specified commmand.");
           return;
         }
-        message.channel.send("WARNING: this will clear the entire database's entry on your server. This will reset EVERYTHING RELATED TO THIS BOT IN THIS SERVER. \n YOU SHOULD ONLY USE THIS COMMAND IF THERE IS A BUG AND I DON'T WORK ANYMORE! WE FIRST ENCOURAGE YOU TO ASK THE COMMNUITY FIRST BEFORE YOU DO THIS!\nARE YOU SURE YOU WANT TO DO THIS? \n If you are sure, type the name of your server below (case sensitive)")
+        message.channel.send("WARNING: this will clear the entire database's entry on your server. This will reset EVERYTHING RELATED TO THIS BOT IN THIS SERVER. \n YOU SHOULD ONLY USE THIS COMMAND IF THERE IS A BUG AND I DON'T WORK ANYMORE! WE FIRST ENCOURAGE YOU TO ASK THE COMMNUITY FIRST BEFORE YOU DO THIS!\n https://discord.gg/B8s6KeMh \nARE YOU SURE YOU WANT TO DO THIS? \n If you are sure, type the name of your server below (case sensitive)")
         message.channel.awaitMessages(m => m.author.id === message.author.id,
         {max: 1, time: 30000}).then(collected => {
       if (collected.first().content === message.guild.name){
@@ -637,7 +637,7 @@ async function checkImage(mongoclient, message){
     message.channel.send("User "+message.author.tag+" just sent a message that contains an image that is nsfw. My confidence in this is: "+ (1-Number(result.confidence))*100+"%");
     return;
   }
-          message.channel.send(`This image is safe for work with a confidence of ${Number(result.confidence)*100}%`);//used for testing purposes, but should be commented out.
+          //message.channel.send(`This image is safe for work with a confidence of ${Number(result.confidence)*100}%`);//used for testing purposes, but should be commented out.
           return;
       } else {
         //this detects bad stuff, and it will delete the message, give that user an infraction,
@@ -681,7 +681,7 @@ async function checkImage(mongoclient, message){
     message.channel.send("User "+message.author.tag+" just sent a message that contains an image that is nsfw. My confidence in this is: "+ (1-Number(result.confidence))*100+"%");
     return;
   }
-        message.channel.send(`This image is safe for work with a confidence of ${Number(result.confidence)*100}%`);//used for testing purposes, but should be commented out.
+        //message.channel.send(`This image is safe for work with a confidence of ${Number(result.confidence)*100}%`);//used for testing purposes, but should be commented out.
         return;
     } else {
       //this detects bad stuff, and it will delete the message, give that user an infraction,
