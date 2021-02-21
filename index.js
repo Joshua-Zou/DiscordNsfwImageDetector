@@ -8,14 +8,14 @@ const getUrls = require('get-urls');
 client.once('ready', () => {
 
   console.log('Ready!');
-  client.user.setPresence({activity: {name: "I'm watchin' you! @me to see my current prefix"}, status: 'online'})
+  client.user.setPresence({activity: {name: "I'm watching you! @me to see my current prefix"}, status: 'online'})
 
 })
-const uri = "_________________________MONGODB_CONNECTION_STRING________________";
+const uri = "____________MONGODB___CONNECTION_STRING____________";
 const mongoclient = new MongoClient(uri, {poolSize: 10, bufferMaxEntries: 0, useNewUrlParser: true,useUnifiedTopology: true});
 mongoclient.connect(async function(err, mongoclient){
   const db = mongoclient.db("discordbot");
-client.login("__________DISCORD_API_KEY______________")
+client.login("_______DISCORD_API_KEY_________")
 client.on('message', message => {
   var guildSettings; //the kinda global settings that I will put data in, in the first if (message) statement
   var prefix = "?" // the default prefix that will get overwritten if admins change it.
@@ -29,7 +29,7 @@ if (message){
 await db.listCollections({name: serverid}, message)
 .next(async function(err, collinfo){
   if (!collinfo){
-    message.channel.send("this seems to be the first time I have seen this server. To start using my features, you can do ?help")
+    message.channel.send("This seems to be the first time I have seen this server. To start using my features, you can do ?help")
     await createCollection(serverid);
     await createListing(mongoclient, {
       name: "serverSettings",
@@ -50,13 +50,13 @@ if (message){
 
   let word2 = message.mentions.users.first().id;
   if (word2 === "811668584559935488" ){
-  message.channel.send("my current prefix is: "+prefix+"\n"+prefix+"help for help");
+  message.channel.send("My current prefix is: "+prefix+"\n"+ "Type " +prefix+"help for help");
 }
 }
 }
 if (message.content.startsWith(prefix+"blacklist")){
           if (message.content.length<(14+prefixlength)) {
-            message.channel.send("you must input a word that is longer than 3 characters to blacklist");//limitation becuase if user blacklists a one character word, then bad things happen.
+            message.channel.send("You must input a word that is longer than 3 characters to blacklist");//limitation becuase if user blacklists a one character word, then bad things happen.
             return;
           }
           if (message.member.hasPermission('ADMINISTRATOR')){
@@ -64,15 +64,15 @@ if (message.content.startsWith(prefix+"blacklist")){
           let proccesedwordx = message.content.toLowerCase().slice(9+prefixlength).trim().split();
           let proccesedword = proccesedwordx.toString();
           await updateListing(mongoclient, {blacklist: proccesedword}, message);
+          return;
           }
             else{
-            message.channel.send("You don't have sufficient permissions to do the specified commmand");
+            message.channel.send("You don't have sufficient permissions to use that specified commmand.");
              }
 
       }
 if (message.content.startsWith(prefix+"delist")){
         if (message.member.hasPermission('ADMINISTRATOR')){
-          message.channel.send('message.author.has permission [ADMINISTRATOR]');
           message.channel.send('Authorized');
 
           let exword = message.content.toLowerCase().slice(7+prefixlength).trim().split();
@@ -80,12 +80,12 @@ if (message.content.startsWith(prefix+"delist")){
           await updateDelListing(mongoclient, {blacklist: exxword}, message);
         }
         else{
-          message.channel.send('you do not have sufficient permissions to change do the specified commmand');
+          message.channel.send("You don't have sufficient permissions to use that specified commmand.");
         }
       }
 if (message.content.toLowerCase() === prefix+"show blacklist"){
         if (!message.member.hasPermission('ADMINISTRATOR')){
-          message.channel.send("you don't have enough perms");
+          message.channel.send("You don't have sufficient permissions to use that specified commmand.");
           return;
         }
         let result = await mongoclient.db("discordbot").collection(message.guild.id)
@@ -96,35 +96,37 @@ if (message.content.toLowerCase() === prefix+"show blacklist"){
             async function local104(){
 
             if (dbwords.blacklist.length === 0){
-              message.channel.send("There are no words in the blacklist. To start blacklisting words, do: `"+prefix+"blacklist [word]`");
+              message.channel.send("There are no words in the blacklist. To start blacklisting words, send: `"+prefix+"blacklist `word`");
               return;
             }else
-            message.channel.send("Sent it to you in DM's");
-          message.member.send("The blacklist: "+ dbwords.blacklist);
+            message.channel.send("Sent it to you in your DM's");
+            let list = dbwords.blacklist;
+            list = list.join('\n')
+          message.member.send("The blacklist: \n"+ list);
       }
 
       }
-      else message.channel.send("There are no words in the blacklist. To start, use the blacklist command");
+      else message.channel.send("There are no words in the blacklist. To start, send: " + prefix + "blacklist `word`.");
       }
 if(message.content.toLowerCase() === prefix+"clear blacklist"){
         if (message.member.hasPermission('ADMINISTRATOR')){
         message.channel.send("Clearing the blacklist...");
         updateDocumentSet(mongoclient, "serverSettings", {blacklist: []}, message);
-        message.channel.send("done")
+        message.channel.send("Done")
       }
       else{
-        message.channel.send("sorry, you don't have enough permissions to do this, please contact your administrator to run this commmand");
+        message.channel.send("You don't have sufficient permissions to use that specified commmand.");
       }
 }
 if (message.content.toLowerCase() === prefix+"set confidence"){
   if (!message.member.hasPermission('ADMINISTRATOR')){
-    message.channel.send("You don't have enough perms.");
+    message.channel.send("You don't have sufficient permissions to use that specified commmand.");
     return;
   }
   let alert = new Discord.MessageEmbed()
   .setTitle("Enter the confidence level that an image is NSFW that I must have to delete an image. (Must be between 5 and 95)")
   .setColor('#9c4cfb')
-  .setDescription("Please note that lower confidence levels will increase the chances of false negatives. For example: \n Confidence of 5% would label people swimming as NSFW\n Confidence of 50% would label naked dummies as NSFW\n Confidence of 75% is normally the sweet spot\n Confidence of 90% wouldn't label some NSFW things as NSFW")
+  .setDescription("Please note that lower confidence levels will increase the chances of false positives. For example: \n Confidence of 5% would label people swimming as NSFW\n Confidence of 50% would label naked dummies as NSFW\n Confidence of 75% is normally the sweet spot\n Confidence of 90% wouldn't label some NSFW things as NSFW")
   message.channel.send(alert)
   message.channel.awaitMessages(m => m.author.id === message.author.id,
   {max: 1, time: 30000}).then(collected => {
@@ -133,37 +135,37 @@ if (message.content.toLowerCase() === prefix+"set confidence"){
     message.channel.send("Confidence must a number.");
     return;
   }else if (confidence>95){
-    message.channel.send("Confidence must be below 96%");
+    message.channel.send("Confidence must be below 96%.");
     return;
   }else if (confidence<5){
-    message.channel.send("Confidence must be above 4%");
+    message.channel.send("Confidence must be above 4%.");
     return;
   }
   updateDocumentSet(mongoclient, "serverSettings", {confidence: confidence}, message);
   message.channel.send("Done. Now, my confidence that an image is NSFW must be above "+confidence+"% to delete messages and increase infractions.")
   }).catch(() => {
-    message.channel.send("No answer after 30 seconds, operation canceled");
+    message.channel.send("No response after 30 seconds, operation canceled.");
   })
 }
 if (message.content.toLowerCase() === prefix+"reset bot"||message.content.toLowerCase() === "?reset bot"){
         if (message.guild.ownerID !== message.author.id){
-          message.channel.send("You have to be a server Owner to run this command");
+          message.channel.send("You don't have sufficient permissions to use that specified commmand.");
           return;
         }
-        message.channel.send("WARNING, this will clear the entire database's entry on your server. This will reset EVERYTHING RELATED TO THIS BOT IN THIS SERVER. \n YOU SHOULD ONLY USE THIS COMMAND IF THERE IS A BUG AND I DON'T WORK ANYMORE! WE FIRST ENCOURAGE YOU TO ASK THE COMMNUITY FIRST BEFORE YOU DO THIS!\nARE YOU SURE YOU WANT TO DO THIS? \n If you are sure, type the name of your server below (case sensitive)")
+        message.channel.send("WARNING: this will clear the entire database's entry on your server. This will reset EVERYTHING RELATED TO THIS BOT IN THIS SERVER. \n YOU SHOULD ONLY USE THIS COMMAND IF THERE IS A BUG AND I DON'T WORK ANYMORE! WE FIRST ENCOURAGE YOU TO ASK THE COMMNUITY FIRST BEFORE YOU DO THIS!\nARE YOU SURE YOU WANT TO DO THIS? \n If you are sure, type the name of your server below (case sensitive)")
         message.channel.awaitMessages(m => m.author.id === message.author.id,
         {max: 1, time: 30000}).then(collected => {
       if (collected.first().content === message.guild.name){
         dropcollection().catch();
         async function dropcollection(){
-      message.channel.send("This will take a minute or two. DO NOT INTERRUPT OPERATION\nDropping Collection...");
+      message.channel.send("This will take a minute or two. DO NOT INTERRUPT THE OPERATION (Please don't send any messages)\nDropping Collection...");
       let guildid = collected.first().guild.id;
       const db = mongoclient.db("discordbot");
       await mongoclient.db("discordbot").collection(guildid).drop();
       }
       return;
       }
-        else message.reply('aborted');
+        else message.reply('Operation aborted');
         return;
         }).catch(() => {
         message.reply('No answer after 30 seconds, operation canceled.');
@@ -186,12 +188,11 @@ if (message.content.startsWith(prefix+"check infractions")){
 
         }
         else{
-          message.channel.send("you don't have enough permissions to use this command");
+          message.channel.send("You don't have sufficient permissions to use that specified commmand.");
         }
       }
 if (message.content.startsWith(prefix+"clear infractions")){
               if (message.member.hasPermission('ADMINISTRATOR')){
-                message.channel.send("message.author has permission [ADMINISTRATOR]");
                 message.channel.send('Authorized');
                 let myword = message.content.toLowerCase().slice(18+prefixlength).trim().split();
                 //let word2 = myword.toString();
@@ -199,12 +200,12 @@ if (message.content.startsWith(prefix+"clear infractions")){
                 await clearInfractions(mongoclient, word2 , {infractions: 0}, message)
               }
               else{
-                message.channel.send("you don't have enough permissions to use this command");
+                message.channel.send("You don't have sufficient permissions to use that specified commmand.");
               }
             }
 if (message.content.toLowerCase().startsWith(prefix+"change prefix")){
               if (!message.member.hasPermission('ADMINISTRATOR')){
-                message.channel.send("you don't have the permissions to do this");
+                message.channel.send("You don't have sufficient permissions to use that specified commmand.");
                 return;
               }
             let length1 = message.content.length;
@@ -212,38 +213,38 @@ if (message.content.toLowerCase().startsWith(prefix+"change prefix")){
             var goodprefix = "?";
               let badprefix = message.content.slice(14+prefixlength);
               if (badprefix.length === 0){
-                message.channel.send("the prefix must be one or more characters");
+                message.channel.send("The prefix must be one or more characters long.");
                 return;
               }
               if (badprefix.length > 3){
-                message.channel.send("the prefix must be 3 or less characters");
+                message.channel.send("The prefix must be 3 or less characters");
                   return;
               }
               badprefix = badprefix.toLowerCase();
                 if (!/^[a-zA-Z]+$/.test(lastchar)&&!/^[0-9]+$/.test(lastchar)){
-                  message.channel.send("making: "+ badprefix+"my prefix. You will now run commands like this: "+badprefix+"bal");
+                  message.channel.send("I have just made: "+ badprefix+"my prefix. You will now run commands like this: "+badprefix+"help");
                   goodprefix = badprefix;
                 }else{
                   goodprefix = badprefix+" ";
-                  message.channel.send("the last character of your prefix must be a special character, otherwise it must contain a space at the end. I will add a space, so now when you run commands, do: "+ goodprefix+"bot info")
+                  message.channel.send("The last character of your prefix must be a special character, otherwise it must contain a space at the end. I will add a space, so now when you run commands, do: "+ goodprefix+"bot info")
                 }
-               message.channel.send("are you sure that you want to make: "+goodprefix+" your prefix? you will type commands like: "+goodprefix+"hi. Type yes if you want to make it the new prefix.");
+               message.channel.send("Are you sure that you want to make: "+goodprefix+" your prefix? you will type commands like: "+goodprefix+"help. Type yes if you want to make it the new prefix.");
                message.channel.awaitMessages(m => m.author.id === message.author.id,
                {max: 1, time: 30000}).then(collected => {
                if (collected.first().content.toLowerCase() === 'yes') {
                    message.reply('making: '+goodprefix+" the new prefix");
                    updateDocumentSet(mongoclient, "serverSettings", {prefix: goodprefix}, message);
-                   message.reply('done. I will update the new prefix after you send another message.')
+                   message.reply('Done.')
                }
                else message.reply('aborted');
                }).catch(() => {
-               message.reply('No answer after 30 seconds, operation canceled.');
+               message.reply('No response after 30 seconds, operation canceled.');
                });
 
             }
 if (message.content.toLowerCase().startsWith(prefix+"ban")){
               if (!message.member.hasPermission("ADMINISTRATOR")){
-                message.channel.send("you don't have enough permissions to kick people haha lol sucks to be you");
+                message.channel.send("You don't have sufficient permissions to use that specified commmand.");
                 return;
               }
               if (message.mentions.members.first()) {
@@ -256,17 +257,17 @@ if (message.content.toLowerCase().startsWith(prefix+"ban")){
                 message.channel.send(":wave: " + member.displayName + " has been successfully banned :point_right: with the reason: " + reason);
 
                 }).catch(() => {
-                  message.reply("oops, something happened, I probably don't have the permissions to ban "+ message.mentions.members.first().displayName+"if you really want to ban this person, you should first remove their admin role.");
+                  message.reply("Oops, something happened, I probably don't have the permissions to ban that user."+ message.mentions.members.first().displayName+"if you really want to ban this person, you should first remove their admin role.");
                 });
 
                    }).catch(() => {
                        message.channel.send("I do not have permissions to do this");
                    });
-               }else message.channel.send("you have to mention someone to ban!");
+               }else message.channel.send("You have to mention a user to ban!");
             }
 if (message.content.toLowerCase().startsWith(prefix+"kick")){
               if (!message.member.hasPermission("ADMINISTRATOR")){
-                message.channel.send("you don't have enough permissions to kick people haha lol sucks to be you");
+                message.channel.send("You don't have sufficient permissions to use that specified commmand.");
                 return;
               }
               if (message.mentions.members.first()) {
@@ -279,13 +280,13 @@ if (message.content.toLowerCase().startsWith(prefix+"kick")){
                 message.channel.send(":wave: " + member.displayName + " has been successfully kicked :point_right: with the reason: " + reason);
 
                 }).catch(() => {
-                message.reply("oops, something happened, I probably don't have the permissions to kick "+ message.mentions.members.first().displayName+" if you really want to kick this person, consider removing their admin role");
+                message.reply("Oops, something happened, I probably don't have the permissions to kick "+ message.mentions.members.first().displayName+" if you really want to kick this person, consider removing their admin role");
                 });
 
                    }).catch(() => {
-                       message.channel.send("I do not have permissions to do this");
+                       message.channel.send("I do not have permissions to do this.");
                    });
-               }else message.channel.send("you have to mention someone to kick!");
+               }else message.channel.send("You have to mention a user to kick!");
             }
 if (message.content.toLowerCase().startsWith(prefix+"help")){
   if (message.content.toLowerCase() === prefix+"help"){
@@ -293,7 +294,7 @@ if (message.content.toLowerCase().startsWith(prefix+"help")){
       .setTitle('Help Menu')
       .setColor('#9c4cfb')
       .addFields(
-      { name: prefix+'help admin', value: 'Admin commands', inline: true },
+      { name: prefix+'help admin', value: 'Administrator commands', inline: true },
       { name: prefix+'help about', value: 'About me', inline: true },
    )
       message.channel.send(help);
@@ -303,19 +304,19 @@ if (message.content.toLowerCase().startsWith(prefix+"help")){
          .setTitle('Help Admin Menu')
          .setColor('#9c4cfb')
          .addFields(
-         { name: prefix+'blacklist', value: 'blacklist [word]', inline: true },
-         { name: prefix+'delist', value: 'delist [word]', inline: true },
-         { name: prefix+'clear blacklist', value: 'clears the blacklist', inline: true },
-         { name: prefix+'show blacklist', value: 'shows the blacklist', inline: true },
-         { name: prefix+'check infractions', value: 'check infractions @someone', inline: true },
-         { name: prefix+'clear infractions', value: 'clear infractions @someone', inline: true },
-         { name: prefix+'change prefix', value: 'change prefix [prefix]', inline: true},
-         { name: prefix+'kick @user', value: 'kicks specified user', inline: true},
-         { name: prefix+'ban @user', value: 'bans specified user', inline: true},
-         { name: prefix+'set confidence', value: 'set the minimum confidence I have to have to list something as NSFW', inline: true},
-         { name: prefix+'change auto settings', value: 'lets you customize auto kicking/banning', inline: true},
-         { name: prefix+'show settings', value: 'shows all of the settings you have customized!', inline: true},
-         { name: prefix+'reset bot', value: 'resets the bot, only do this if there is a bug, but first report the bug.', inline: true },
+         { name: prefix+'blacklist `word`', value: 'Blacklists a word', inline: true },
+         { name: prefix+'delist `word`', value: 'Unblacklists a word', inline: true },
+         { name: prefix+'clear blacklist', value: 'Removes all words from the blacklist', inline: true },
+         { name: prefix+'show blacklist', value: 'Displays the blacklist', inline: true },
+         { name: prefix+'check infractions `@user`', value: 'Displays the infraction count for the specified user', inline: true },
+         { name: prefix+"clear infractions `@user`", value: "Clears all the infractions for a specified user", inline: true },
+         { name: prefix+'change prefix `new prefix`', value: "Changes the bot's prefix", inline: true},
+         { name: prefix+'kick `@user`', value: 'Kicks specified user from the server', inline: true},
+         { name: prefix+'ban `@user`', value: 'Bans specified user from the server', inline: true},
+         { name: prefix+'set confidence', value: 'Every time an image is sent, I have a confidence for the chances of it being NSFW. Doing the command will explain what each confidence will do.', inline: true},
+         { name: prefix+'change auto settings', value: 'Lets you customize the automatic kicking/banning system', inline: true},
+         { name: prefix+'show settings', value: 'Shows all of the settings you have customized', inline: true},
+         { name: prefix+'reset bot', value: 'Resets the bot and all its information. Only do this if there is a bug, but please report the bug first.', inline: true },
       )
          message.channel.send(help);
 
@@ -324,7 +325,7 @@ if (message.content.toLowerCase().startsWith(prefix+"help")){
      let help = new Discord.MessageEmbed()
        .setTitle('About Me')
        .setColor('#9c4cfb')
-       .setDescription("What do I do?\n I use advanced machine learning to detect nsfw components in an image. I then delete the image and do one or more of the following: \n 1. increase infraction count\n 2. Kick user after x infractions\n 3. Ban user after x infractions")
+       .setDescription("What do I do?\n I use advanced machine learning to detect NSFW components in an image. I then delete the image and do one or more of the following: \n 1. Increase the infraction count for the user\n 2. Kick the user after x infractions\n 3. Ban user after x infractions")
        message.channel.send(help);
    }
 }
@@ -336,7 +337,7 @@ if (message.content.toLowerCase().startsWith(prefix+"change auto settings")){
   var mode;
   let option = await selOption();
   if (option === "restart"){
-    message.channel.send("That wasn't an option, please restart.");
+    message.channel.send("That isn't an option, please restart.");
     return;
   }else if (option === "1") mode = "kick"
   else if (option === "2") mode = "ban"
@@ -372,10 +373,10 @@ if (message.content.toLowerCase().startsWith(prefix+"change auto settings")){
   function selInfractions(){
     return new Promise(resolve => {
       let embed = new Discord.MessageEmbed()
-      .setTitle("Set after how many infraction I ban/kick")
+      .setTitle("Set the threshold of infractions for banning/kicking a user.")
       .setColor('#9c4cfb')
       .setDescription("Enter a number between 2 and 1000")
-      .setFooter("If you want to set to never ban/kick based off of infractions, enter `none`")
+      .setFooter("If you want to set to never ban/kick based off of infractions, enter 'none'.")
     message.channel.send(embed);
       message.channel.awaitMessages(m => m.author.id === message.author.id,
       {max: 1, time: 30000}).then(collected => {
@@ -413,7 +414,7 @@ if (message.content.toLowerCase() === prefix+"show settings"){
   .setColor('#9c4cfb')
   .setDescription("Current Prefix: "+prefix)
   .addFields(
-    {name: "blacklist", value: "Do "+prefix+"show blacklist to see the blacklist", inline: true},
+    {name: "Blacklist", value: "Do "+prefix+"show blacklist to see the blacklist", inline: true},
     {name: "NSFW threshold", value: conf+"%", inline: true},
     {name: "Kicking threshold", value: kicks+" infractions", inline: true},
     {name: "Banning threshold", value: bans+" infractions", inline: true},
@@ -476,17 +477,19 @@ async function findOneListingByName(mongoclient, nameOfListing, tag, message){
 async function clearInfractions(mongoclient, name, updatedlisting, message){
     let result = await mongoclient.db("discordbot").collection(message.guild.id)
     .updateOne({ name: name}, {$set: updatedlisting});
-    message.channel.send("done");
+    message.channel.send("Done");
   }
 async function updateListing(mongoclient, updatedlisting, message){
      let result = await mongoclient.db("discordbot").collection(message.guild.id)
      .updateOne({ name: "serverSettings"}, {$push: updatedlisting});
-     message.channel.send("done");
+     message.channel.send("Done");
    }
 async function updateDelListing(mongoclient, updatedlisting, message){
         let result = await mongoclient.db("discordbot").collection(message.guild.id)
         .updateOne({name: "serverSettings"}, {$pull: updatedlisting});
-        message.channel.send("done");
+        //console.log(result)
+        if (Number(result.modifiedCount) === 0) message.channel.send("That was not delisted because there was no previous word called: "+updatedlisting.blacklist)
+        else message.channel.send("Done")
       }
 async function createListing(mongoclient, newWord, message){
 
